@@ -6,11 +6,13 @@ import {
   dealTypeSelectFieldOptions,
   getDealTypeFromDealTemplate,
 } from './DealType';
+import { cloneDeep } from 'lodash';
 
 export function DealFormReducer(
   state: DealFormState,
   action: { type: DealFormActionType; data: any }
 ) {
+  const newState = cloneDeep(state);
   switch (action.type) {
     case DealFormActionType.OnLoad: {
       //init the state of the form
@@ -24,40 +26,40 @@ export function DealFormReducer(
       }, {});
 
       //set the deal type options
-      state.config.dealTypeOptions = dealTypeSelectFieldOptions({
+      newState.config.dealTypeOptions = dealTypeSelectFieldOptions({
         translate,
       });
-      autoUpdateDealTypeOptions(state, availableTypesIndex);
-      autoSelectFirstDealType(state);
+      autoUpdateDealTypeOptions(newState, availableTypesIndex);
+      autoSelectFirstDealType(newState);
 
       //set the preferred discount
-      state.config.discountOptions = dealTemplates.map((dealTemplate) => {
+      newState.config.discountOptions = dealTemplates.map((dealTemplate) => {
         return {
-          'id': dealTemplate.id,
+          id: dealTemplate.id,
           text: formatDealTemplateAsDiscount({ translate })(dealTemplate),
           value: {
             dealTemplate,
           },
         };
       });
-      autoUpdateDiscountOptions(state);
+      autoUpdateDiscountOptions(newState);
       //select the first discount option
-      state.data.discount = state.config.discountOptions[0]?.value;
+      newState.data.discount = newState.config.discountOptions[0]?.value;
       break;
     }
     case DealFormActionType.SetDealType: {
-      state.data.dealType = action.data;
-      autoUpdateDiscountOptions(state);
-      autoSelectFirstDiscount(state);
+      newState.data.dealType = action.data;
+      autoUpdateDiscountOptions(newState);
+      autoSelectFirstDiscount(newState);
       break;
     }
     case DealFormActionType.SetDiscount: {
-      state.data.discount = action.data;
+      newState.data.discount = action.data;
       break;
     }
   }
-  updateFeatures(state);
-  return { ...state }; //copying causes a re-render
+  updateFeatures(newState);
+  return newState;
 }
 
 const autoUpdateDealTypeOptions = (
